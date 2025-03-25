@@ -1,661 +1,520 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="ru">
 <head>
-	<title>Fire Guard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberTerminal PRO</title>
+    <style>
+        :root {
+            --primary: #00ff00;
+            --secondary: #ff00ff;
+            --accent: #00ffff;
+            --text: #ffffff;
+            --bg: #000000;
+            --dark-bg: #0a0a0a;
+            --youtube: #FF0000;
+            --github: #333333;
+            --telegram: #0088cc;
+            --discord: #5865F2;
+        }
 
-	<meta charset="utf-8">
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
 
-	<!--[if IE]><meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'><![endif]-->
-	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-	
-	<!-- Google Fonts -->
-	<link href='https://fonts.googleapis.com/css?family=Arimo&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
-	<link href='https://fonts.googleapis.com/css?family=Noto+Serif&subset=latin,cyrillic' rel='stylesheet' type='text/css'>
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
 
-	<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" media="screen">
-	
-	
-	<link rel="stylesheet" type="text/css" href="css/stroke-gap-icons.css" media="screen" />
-	<link rel="stylesheet" type="text/css" href="css/pe-icon-7-stroke.css" media="screen" />
-	<link rel="stylesheet" type="text/css" href="css/elegant-icons.css" media="screen" />
-	<link rel="stylesheet" type="text/css" href="css/font-awesome.css" media="screen" />
-	<link rel="stylesheet" type="text/css" href="css/style.css" media="screen" />
-	<link rel="stylesheet" type="text/css" href="css/responsive.css" media="screen" />
-	<link rel="stylesheet" type="text/css" href="css/animate.css" media="screen" />
-	<link rel="stylesheet" type="text/css" href="css/slider.css">
+        /* Matrix эффект */
+        #matrix-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            opacity: 0.1;
+            pointer-events: none;
+        }
 
+        /* Главный заголовок */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            width: 100%;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            color: var(--accent);
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        /* Основной контейнер */
+        .container {
+            width: 100%;
+            max-width: 900px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* Терминал */
+        #terminal {
+            grid-column: span 2;
+            border: 1px solid var(--primary);
+            background-color: var(--dark-bg);
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.1);
+        }
+
+        .terminal-header {
+            background-color: rgba(0, 255, 0, 0.1);
+            padding: 8px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--primary);
+        }
+
+        .terminal-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .close { background-color: #ff5f56; }
+        .minimize { background-color: #ffbd2e; }
+        .maximize { background-color: #27c93f; }
+
+        #terminal-output {
+            height: 300px;
+            overflow-y: auto;
+            padding: 15px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        #terminal-output div {
+            margin-bottom: 5px;
+        }
+
+        .command-line {
+            display: flex;
+            align-items: center;
+            padding: 0 15px 15px;
+            border-top: 1px solid rgba(0, 255, 0, 0.2);
+        }
+
+        .prompt {
+            color: var(--primary);
+            margin-right: 10px;
+        }
+
+        #terminal-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text);
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        /* Блоки инструментов */
+        .panel {
+            background-color: var(--dark-bg);
+            border: 1px solid var(--secondary);
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.1);
+        }
+
+        .panel-title {
+            color: var(--secondary);
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .panel-title::before {
+            content: ">> ";
+            color: var(--accent);
+        }
+
+        .tool-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .tool-btn {
+            background-color: rgba(0, 0, 0, 0.3);
+            border: 1px solid;
+            border-radius: 5px;
+            padding: 12px;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .tool-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 255, 255, 0.2);
+        }
+
+        .tool-btn i {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        /* Специальные цвета для соцсетей */
+        .youtube { border-color: var(--youtube); color: var(--youtube); }
+        .github { border-color: var(--github); color: var(--github); }
+        .telegram { border-color: var(--telegram); color: var(--telegram); }
+        .discord { border-color: var(--discord); color: var(--discord); }
+
+        /* Анимации */
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .blink {
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse:hover {
+            animation: pulse 2s infinite;
+        }
+
+        /* Полоса прокрутки */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
-
 <body>
+    <canvas id="matrix-canvas"></canvas>
 
-	<!-- Preloader -->
-	<div id="preloader">
-	    <div id="status">&nbsp;</div>
-	</div>
+    <div class="header">
+        <div class="logo">CYBER TERMINAL PRO</div>
+        <div class="subtitle">Advanced Security Toolkit v5.2</div>
+    </div>
 
-	<header>
-	<!-- Navbar -->
-	    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
-	    	<nav class="navigation">
-		      	<div class="container">
-			        <div class="navbar-header">
-			        	<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse">
-				            <span class="sr-only">Открыть меню</span>
-				            <span class="icon-bar"></span>
-				            <span class="icon-bar"></span>
-				            <span class="icon-bar"></span>
-			        	</button>	        	 
-						<!-- Logo -->
-						<div class="logo">
-				        	<a href="index.html">
-				        		INFORMATI<i>on</i>
-				          	</a>
-			        	</div>         
-			        </div> <!-- end navbar-header -->
+    <div class="container">
+        <!-- Терминал -->
+        <div class="panel" id="terminal" style="grid-column: span 2;">
+            <div class="terminal-header">
+                <div>root@cyberterminal:~</div>
+                <div class="terminal-controls">
+                    <div class="control-btn close"></div>
+                    <div class="control-btn minimize"></div>
+                    <div class="control-btn maximize"></div>
+                </div>
+            </div>
+            <div id="terminal-output">
+                <div>> Booting CyberTerminal PRO v5.2...</div>
+                <div>> Loading security modules...</div>
+                <div>> Establishing encrypted connection...</div>
+                <div>> System ready</div>
+                <div>> Type <span style="color: var(--primary)">'help'</span> for available commands</div>
+            </div>
+            <div class="command-line">
+                <span class="prompt">root@terminal:~#</span>
+                <input type="text" id="terminal-input" autocomplete="off" spellcheck="false">
+            </div>
+        </div>
 
-			        <div class="collapse navbar-collapse" id="navbar-collapse">
-			          
-			        	<ul class="nav navbar-nav navbar-right">
+        <!-- Блок инструментов -->
+        <div class="panel">
+            <div class="panel-title">SECURITY TOOLS</div>
+            <div class="tool-grid">
+                <div class="tool-btn" id="network-scan">
+                    <i class="fas fa-network-wired"></i>
+                    Network Scan
+                </div>
+                <div class="tool-btn" id="vulnerability-test">
+                    <i class="fas fa-shield-alt"></i>
+                    Vuln Test
+                </div>
+                <div class="tool-btn" id="password-crack">
+                    <i class="fas fa-key"></i>
+                    Password Crack
+                </div>
+                <div class="tool-btn" id="traffic-monitor">
+                    <i class="fas fa-traffic-light"></i>
+                    Traffic Monitor
+                </div>
+            </div>
+        </div>
 
-				          	<li class="active">
-				            	<a href="index.html">Главная</a>
-				            </li>
+        <!-- Блок утилит -->
+        <div class="panel">
+            <div class="panel-title">UTILITIES</div>
+            <div class="tool-grid">
+                <div class="tool-btn" id="encrypt-tool">
+                    <i class="fas fa-lock"></i>
+                    Encrypt
+                </div>
+                <div class="tool-btn" id="decrypt-tool">
+                    <i class="fas fa-unlock"></i>
+                    Decrypt
+                </div>
+                <div class="tool-btn" id="ip-spoof">
+                    <i class="fas fa-user-secret"></i>
+                    IP Spoof
+                </div>
+                <div class="tool-btn" id="data-wipe">
+                    <i class="fas fa-eraser"></i>
+                    Data Wipe
+                </div>
+            </div>
+        </div>
 
-				            <li>
-				            	<a href="#">Услуги</a>
-				            </li>
+        <!-- Блок социальных сетей -->
+        <div class="panel" style="grid-column: span 2;">
+            <div class="panel-title">SOCIAL NETWORKS</div>
+            <div class="tool-grid">
+                <a href="https://www.youtube.com/@Nedohavals-lite" class="tool-btn youtube" target="_blank">
+                    <i class="fab fa-youtube"></i>
+                    YouTube
+                </a>
+                <a href="https://github.com/nikitkakhodiev2" class="tool-btn github" target="_blank">
+                    <i class="fab fa-github"></i>
+                    GitHub
+                </a>
+                <a href="https://t.me/nikitashowa" class="tool-btn telegram" target="_blank">
+                    <i class="fab fa-telegram"></i>
+                    Telegram
+                </a>
+                <a href="https://discord.gg/Cp3RQtuQCM" class="tool-btn discord" target="_blank">
+                    <i class="fab fa-discord"></i>
+                    Discord
+                </a>
+            </div>
+        </div>
+    </div>
 
-				            <li>
-				            	<a href="#">Проекты</a>
-				            </li>
-				            
-				            <li>
-				            	<a href="#">Статьи</a>
-				            </li>
+    <script>
+        // Улучшенный Matrix эффект
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        const chars = "日ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾃﾏｹﾒｴｶｷﾑﾕﾗｾﾈｽﾀﾇﾍｦｲｸｺｿﾁﾄﾉﾌﾔﾖﾙﾚﾛﾝ0123456789ABCDEF";
+        const fontSize = 18;
+        const columns = Math.floor(canvas.width / fontSize);
+        const drops = Array(columns).fill(0);
+        
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#0f0';
+            ctx.font = `${fontSize}px monospace`;
+            
+            for (let i = 0; i < drops.length; i++) {
+                const char = chars[Math.floor(Math.random() * chars.length)];
+                ctx.fillText(char, i * fontSize, drops[i] * fontSize);
+                
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                
+                drops[i]++;
+            }
+        }
+        
+        setInterval(drawMatrix, 50);
 
-				            <li>
-				            	<a href="#">Контакты</a>
-				            </li>
+        // Расширенный терминал
+        const terminalInput = document.getElementById('terminal-input');
+        const terminalOutput = document.getElementById('terminal-output');
+        
+        const commands = {
+            help: {
+                desc: "Show all available commands",
+                execute: () => {
+                    let output = "<div>> <span style='color:var(--primary)'>Available commands:</span></div>";
+                    Object.keys(commands).forEach(cmd => {
+                        output += `<div>> <span style='color:var(--accent)'>${cmd}</span> - ${commands[cmd].desc}</div>`;
+                    });
+                    return output;
+                }
+            },
+            clear: {
+                desc: "Clear terminal screen",
+                execute: () => {
+                    terminalOutput.innerHTML = '';
+                    return '';
+                }
+            },
+            scan: {
+                desc: "Scan local network",
+                execute: () => {
+                    const devices = [
+                        { ip: "192.168.1.1", name: "Router", ports: "22, 80, 443" },
+                        { ip: "192.168.1.15", name: "Smart TV", ports: "8080" },
+                        { ip: "192.168.1.42", name: "Security Camera", ports: "80, 554" }
+                    ];
+                    
+                    let output = "<div>> Starting network scan...</div>";
+                    devices.forEach(device => {
+                        output += `<div>> Found: <span style='color:var(--accent)'>${device.ip}</span> (${device.name}) - Ports: ${device.ports}</div>`;
+                    });
+                    output += "<div>> Scan completed</div>";
+                    return output;
+                }
+            },
+            encrypt: {
+                desc: "Encrypt file with AES-256",
+                execute: () => {
+                    const key = Array(32).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('');
+                    return `<div>> Initializing AES-256 encryption...</div>
+                            <div>> Generated key: <span style='color:var(--accent)'>${key}</span></div>
+                            <div>> Encryption complete</div>`;
+                }
+            },
+            ping: {
+                desc: "Ping host",
+                execute: () => {
+                    const hosts = ["google.com", "github.com", "wikipedia.org"];
+                    const host = hosts[Math.floor(Math.random() * hosts.length)];
+                    const time = (Math.random() * 50 + 10).toFixed(2);
+                    
+                    return `<div>> Pinging ${host}...</div>
+                            <div>> Reply from ${host}: time=${time}ms</div>`;
+                }
+            }
+        };
 
-				            <li>
-				            	<div id="search">
-				            		<i class="pe-7s-search search-trigger"></i>
-				            	</div>
-				            	<div class="search-bar">
-					            	<div class="search-wrap">
-										<form role="form">
-										    <div class="form-group">
-											    <input type="search" class="form-control searchbox" placeholder="Search">
-									    	</div>
-									    	<button type="submit" class="search-button"><i class="pe-7s-search"></i></button>
-									    </form>
-								    </div>
-								</div>
-				            </li>
-			        	</ul> <!-- end menu -->
-			        </div> <!-- end collapse -->    
-	      		</div> <!-- end container -->
-	      	</nav> <!-- end navigation -->
-	    </nav> <!-- End Navbar -->
-	</header>
+        terminalInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const command = this.value.trim();
+                this.value = '';
+                
+                if (command === '') return;
+                
+                let response;
+                
+                if (commands[command.toLowerCase()]) {
+                    response = commands[command.toLowerCase()].execute();
+                } else {
+                    response = `<div>> <span style='color:#ff5555'>Error:</span> Unknown command '${command}'</div>
+                               <div>> Type <span style='color:var(--primary)'>'help'</span> for available commands</div>`;
+                }
+                
+                terminalOutput.innerHTML += `<div><span style='color:var(--secondary)'>root@terminal:~#</span> ${command}</div>`;
+                if (response) {
+                    terminalOutput.innerHTML += response;
+                }
+                
+                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            }
+        });
 
-	<div class="main-wrapper">
+        // Обработчики для инструментов
+        document.querySelectorAll('.tool-btn:not([href])').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const toolId = this.id;
+                let message = '';
+                
+                switch(toolId) {
+                    case 'network-scan':
+                        message = "> Initializing network scan...<br>> Scanning subnet 192.168.1.0/24...<br>> Found 8 active hosts";
+                        break;
+                    case 'vulnerability-test':
+                        message = "> Running vulnerability assessment...<br>> Detected 3 potential vulnerabilities<br>> CVE-2023-1234: Critical";
+                        break;
+                    case 'password-crack':
+                        message = "> Starting brute-force attack...<br>> Trying common passwords...<br>> Password found: 'admin123'";
+                        break;
+                    case 'traffic-monitor':
+                        message = "> Monitoring network traffic...<br>> Detected suspicious activity from 192.168.1.33<br>> Port scanning detected";
+                        break;
+                    case 'encrypt-tool':
+                        const key = Array(32).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('');
+                        message = `> Initializing encryption...<br>> Using AES-256 algorithm<br>> Encryption key: <span style='color:var(--accent)'>${key}</span><br>> Process completed`;
+                        break;
+                    case 'decrypt-tool':
+                        message = "> Decryption module loaded<br>> Error: No encryption key provided<br>> Operation aborted";
+                        break;
+                    case 'ip-spoof':
+                        const fakeIp = `10.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`;
+                        message = `> Spoofing IP address...<br>> New IP: <span style='color:var(--accent)'>${fakeIp}</span><br>> MAC address randomized`;
+                        break;
+                    case 'data-wipe':
+                        message = "> Initializing secure wipe...<br>> Overwriting data 7 passes...<br>> Data destruction complete";
+                        break;
+                }
+                
+                terminalOutput.innerHTML += `<div>> [${this.textContent.trim()}] tool activated</div>${message ? `<div>${message}</div>` : ''}`;
+                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            });
+        });
 
-	<section class="cd-slider-wrapper">
-		<ul class="cd-slider">
-			<li class="visible">
-				<div>
-					<h2>Добро пожаловать!</h2>
-					<p>Современный шаблон сайта HTML5</p>
-					<a href="#0" class="cd-btn">Подробнее</a>
-				</div>
-			</li>
-				
-			<li>
-				<div>
-					<h2>Информация</h2>
-					<p>Короткое описание товара или услуги</p>
-					<a href="#0" class="cd-btn">подробнее</a>
-				</div>
-			</li>
-
-			<li>
-				<div>
-					<h2>Информация</h2>
-					<p>Короткое описание товара или услуги</p>
-					<a href="#0" class="cd-btn">подробнее</a>
-				</div>
-			</li>
-
-			<li>
-				<div>
-					<h2>Информация</h2>
-					<p>Короткое описание товара или услуги</p>
-					<a href="#0" class="cd-btn">подробнее</a>
-				</div>
-			</li>
-		</ul> <!-- .cd-slider -->
-	
-		<ol class="cd-slider-navigation">
-			<li class="selected"><a href="#0"><em>Слайд#1</em></a></li>
-			<li><a href="#0"><em>Слайд#2</em></a></li>
-			<li><a href="#0"><em>Слайд#3</em></a></li>
-			<li><a href="#0"><em>Слайд#4</em></a></li>
-		</ol> <!-- .cd-slider-navigation -->
-		
-		<div class="cd-svg-cover" data-step1="M1402,800h-2V0.6c0-0.3,0-0.3,0-0.6h2v294V800z" data-step2="M1400,800H383L770.7,0.6c0.2-0.3,0.5-0.6,0.9-0.6H1400v294V800z" data-step3="M1400,800H0V0.6C0,0.4,0,0.3,0,0h1400v294V800z" data-step4="M615,800H0V0.6C0,0.4,0,0.3,0,0h615L393,312L615,800z" data-step5="M0,800h-2V0.6C-2,0.4-2,0.3-2,0h2v312V800z" data-step6="M-2,800h2L0,0.6C0,0.3,0,0.3,0,0l-2,0v294V800z" data-step7="M0,800h1017L629.3,0.6c-0.2-0.3-0.5-0.6-0.9-0.6L0,0l0,294L0,800z" data-step8="M0,800h1400V0.6c0-0.2,0-0.3,0-0.6L0,0l0,294L0,800z" data-step9="M785,800h615V0.6c0-0.2,0-0.3,0-0.6L785,0l222,312L785,800z" data-step10="M1400,800h2V0.6c0-0.2,0-0.3,0-0.6l-2,0v312V800z">
-			<svg height='100%' width="100%" preserveAspectRatio="none" viewBox="0 0 1400 800">
-				<title>World Information</title>
-				<desc>адаптивный CSS шаблон</desc>
-				<path id="cd-changing-path" d="M1402,800h-2V0.6c0-0.3,0-0.3,0-0.6h2v294V800z"/>
-			</svg>
-		</div> <!-- .cd-svg-cover -->
-	</section> <!-- .cd-slider-wrapper -->
-
-	<!-- Our Services -->
-		<section class="section-wrap services">
-			<div class="container">
-				<div class="row">
-					<div class="col-sm-4">
-						<div class="service-item icon-effect-1 icon-blue icon-effect-1a">
-							<a href="#">
-								<i class="hi-icon icon icon-Click"></i>
-							</a>
-							<h5 class="text-center">Проектирование</h5>
-							<div class="main-border blue"></div>
-							<p class="text-center">Таким образом новая модель организационной деятельности способствует подготовки и реализации системы обучения кадров, соответствует насущным потребностям.</p>							
-						</div>						
-					</div> <!-- end service item -->
-
-					<div class="col-sm-4">
-						<div class="service-item icon-effect-1 icon-violet icon-effect-1a">							
-							<a href="#">
-								<i class="hi-icon icon icon-Umbrella"></i>
-							</a>
-							<h5 class="text-center">Реализация</h5>
-							<div class="main-border violet"></div>
-							<p class="text-center">Таким образом новая модель организационной деятельности способствует подготовки и реализации системы обучения кадров, соответствует насущным потребностям.</p>							
-						</div>						
-					</div> <!-- end service item -->
-
-					<div class="col-sm-4">
-						<div class="service-item icon-effect-1 icon-orange icon-effect-1a last">							
-							<a href="#">
-								<i class="hi-icon icon icon-Dollars"></i>
-							</a>
-							<h5 class="text-center">Результативность</h5>
-							<div class="main-border orange"></div>
-							<p class="text-center">Таким образом новая модель организационной деятельности способствует подготовки и реализации системы обучения кадров, соответствует насущным потребностям.</p>							
-						</div>						
-					</div><!-- end service item -->
-				</div> <!-- end row -->
-			</div> <!-- end container -->
-		</section> <!-- end services -->
-
-	<!-- Call to Action -->
-		<section class="call-to-action">
-			<div class="container">			
-				<h3 class="cta-subheading text-center">Мы предлагаем только качественные услуги</h3>
-				<h2 class="text-center mt30">Выбор за Вами</h2>
-				<div class="col-lg-12 text-center mt40">
-					<a href="#" id="cta-button-solid" class="btn btn-large btn-rounded btn-light-solid">Заказать</a>
-					<a href="#" id="cta-button-stroke" class="btn btn-large btn-rounded btn-light-transparent">Подробнее</a>
-				</div>
-			</div> <!-- end container -->
-		</section> <!-- end call to action -->
-
-	<!-- Core Features -->
-		<section class="core-features style-1">
-			<div class="container">			
-				<h2 class="text-center">Наши преимущества</h2>
-				<p class="subheading text-center">Мы совершенствуем свои качетсва для Вас</p>
-				<div class="main-border blue"></div>
-
-				<div class="features-promo mt70">
-					<div class="row">
-						<!-- start left column -->
-						<div class="col-lg-3 col-md-4 col-sm-6">
-							<div class="features-item features-right text-right">
-								<div class="features-icon">
-									<i class="icon icon-Search"></i>
-								</div>
-								<h5>Преимущество №1</h5>
-								<p>Описание функционала и качеств Вашей компании. Краткое введение.</p>
-							</div> <!-- end features item -->
-
-							<div class="features-item features-right text-right">
-								<div class="features-icon">
-									<i class="icon icon-Layers"></i>
-								</div>
-								<h5>Преимущество №2</h5>
-								<p>Описание функционала и качеств Вашей компании. Краткое введение.</p>
-							</div> <!-- end features item -->
-
-							<div class="features-item features-right text-right">
-								<div class="features-icon">
-									<i class="icon icon-Drop"></i>
-								</div>
-								<h5>Преимущество №3</h5>
-								<p>Описание функционала и качеств Вашей компании. Краткое введение.</p>
-							</div> <!-- end features item -->
-						</div> <!-- end left column-->
-						
-						<div class="promo-img col-lg-6 col-md-4 hidden-sm hidden-xs text-center">
-							<img src="upload/core_features_img.jpg" alt="core-features-img">
-						</div>
-
-						<!-- start right column -->
-						<div class="col-lg-3 col-md-4 col-sm-6">
-							<div class="features-item">
-								<div class="features-icon">
-									<i class="icon icon-Tools"></i>
-								</div>
-								<h5>Преимущество №4</h5>
-								<p>Описание функционала и качеств Вашей компании. Краткое введение.</p>
-							</div> <!-- end features item -->
-
-							<div class="features-item">
-								<div class="features-icon">
-									<i class="icon icon-Timer"></i>
-								</div>
-								<h5>Преимущество №5</h5>
-								<p>Описание функционала и качеств Вашей компании. Краткое введение.</p>
-							</div> <!-- end features item -->
-
-							<div class="features-item">
-								<div class="features-icon">
-									<i class="icon icon-Notes"></i>
-								</div>
-								<h5>Преимущество №6</h5>
-								<p>Описание функционала и качеств Вашей компании. Краткое введение.</p>
-							</div> <!-- end features item -->
-						</div> <!-- end right column-->
-					</div> <!-- end row -->
-				</div> <!-- end features promo -->
-			</div> <!-- end container -->
-		</section> <!-- end core features -->
-
-	<!-- Results -->
-		<section class="results">
-			<div class="container">
-				<div class="row">
-					<div class="col-sm-3 text-center">
-						<div class="statistic">
-							<span class="timer" data-from="0" data-to="547"></span>
-							<h5 class="counter-text">довольных клиента</h5>
-						</div>
-					</div> <!-- end col -->
-
-					<div class="col-sm-3 text-center">
-						<div class="statistic">
-							<span class="timer" data-from="0" data-to="1024"></span>
-							<h5 class="counter-text">успешных проектов</h5>
-						</div>
-					</div> <!-- end col -->
-
-					<div class="col-sm-3 text-center">
-						<div class="statistic">
-							<span class="timer" data-from="0" data-to="3589"></span>
-							<h5 class="counter-text">надежных партнеров</h5>
-						</div>
-					</div> <!-- end col -->
-
-					<div class="col-sm-3 text-center">
-						<div class="statistic">
-							<span class="timer" data-from="0" data-to="999"></span>
-							<h5 class="counter-text">контрактов</h5>
-						</div>
-					</div> <!-- end col -->
-				</div> <!-- end row -->
-			</div> <!-- end container -->
-		</section> <!-- end results -->
-
-	<!-- Our Team -->
-		<section class="section-wrap our-team bg-light">
-			<div class="container">
-				<h2 class="text-center">Наша команда</h2>
-				<p class="subheading text-center">Лучшие из лучших</p>
-				<div class="main-border blue"></div>
-
-				<ul id="team" class="clearfix">
-					<li class="team-member">
-						<div class="team-img">
-							<img src="upload/team_member_1.jpg" alt="team member 1">
-						</div>
-						<div class="team-details text-center">
-							<h5 class="team-title">Джейн Доу</h5>
-							<span>Директор</span>
-							<div class="team-socials">
-								<a href="#"><i class="fa fa-facebook"></i></a>
-								<a href="#"><i class="fa fa-twitter"></i></a>
-								<a href="#"><i class="fa fa-google-plus"></i></a>
-								<a href="#"><i class="fa fa-envelope"></i></a>
-							</div>
-						</div>
-					</li> <!-- end team member -->
-
-					<li class="team-member">
-						<div class="team-img">
-							<img src="upload/team_member_2.jpg" alt="team member 2">
-						</div>
-						<div class="team-details text-center">
-							<h5 class="team-title">Джон Доу</h5>
-							<span>Заместитель директора</span>
-							<div class="team-socials">
-								<a href="#"><i class="fa fa-facebook"></i></a>
-								<a href="#"><i class="fa fa-twitter"></i></a>
-								<a href="#"><i class="fa fa-google-plus"></i></a>
-								<a href="#"><i class="fa fa-envelope"></i></a>
-							</div>
-						</div>
-					</li> <!-- end team member -->
-
-					<li class="team-member">
-						<div class="team-img">
-							<img src="upload/team_member_3.jpg" alt="team member 3">
-						</div>
-						<div class="team-details text-center">
-							<h5 class="team-title">Джон Доу</h5>
-							<span>Топ-менеджер</span>
-							<div class="team-socials">
-								<a href="#"><i class="fa fa-facebook"></i></a>
-								<a href="#"><i class="fa fa-twitter"></i></a>
-								<a href="#"><i class="fa fa-google-plus"></i></a>
-								<a href="#"><i class="fa fa-envelope"></i></a>
-							</div>
-						</div>
-					</li> <!-- end team member -->
-
-					<li class="team-member">
-						<div class="team-img">
-							<img src="upload/team_member_4.jpg" alt="team member 4">
-						</div>
-						<div class="team-details text-center">
-							<h5 class="team-title">Джейн Доу</h5>
-							<span>Эксперт</span>
-							<div class="team-socials">
-								<a href="#"><i class="fa fa-facebook"></i></a>
-								<a href="#"><i class="fa fa-twitter"></i></a>
-								<a href="#"><i class="fa fa-google-plus"></i></a>
-								<a href="#"><i class="fa fa-envelope"></i></a>
-							</div>
-						</div>
-					</li> <!-- end team member -->
-				</ul>
-			</div> <!-- end container -->
-		</section> <!-- end our team -->
-
-	<!-- From Blog -->
-		<section class="section-wrap from-blog">
-			<div class="container">			
-				<h2 class="text-center">Новости & Статьи</h2>
-				<p class="subheading text-center">Последние события</p>
-				<div class="main-border blue"></div>
-
-				<div class="blog-articles mt50">
-					<div class="col-xs-12 text-center">
-						<div class="entry-text">
-							<h3>
-								<a href="#">Создание и продвижение компаний в сети Интернет</a>
-							</h3>
-							<span class="blog-data">9 августа, 2015</span>	
-						</div> <!-- end entry -->	
-
-						<div class="entry-text mt40">
-							<h3>
-								<a href="#">Создание и продвижение компаний в сети Интернет</a>
-							</h3>
-							<span class="blog-data">5 августа, 2015</span>	
-						</div><!-- end entry -->
-
-						<div class="entry-text mt40">
-							<h3>
-								<a href="#">Создание и продвижение компаний в сети Интернет</a>
-							</h3>
-							<span class="blog-data">3 августа, 2015</span>	
-						</div><!-- end entry -->		
-
-					</div> <!-- end column-->
-				</div> <!-- end blog-article -->
-			</div> <!-- end container -->
-		</section> <!-- end from blog -->
-
-	<!-- Promo Boxes -->
-		<section class="promo-boxes">
-			<div class="container-fluid">
-				<div class="row">
-					<div class="col-md-4 nopadding">
-						<div class="promo-box-first">
-							
-							<h2 class="heading-white">Множество идей</h2>
-							<p class="white">Таким образом новая модель организационной деятельности способствует подготовки и реализации системы обучения кадров, соответствует насущным потребностям. Повседневная практика показывает, что дальнейшее развитие различных форм деятельности требуют от нас анализа форм развития.
-							</p>
-							<a href="#" class="btn btn-large btn-rounded btn-light-transparent">Читать</a>
-							<i class="icon icon-Click"></i>
-						</div> <!-- end fist promo box -->
-					</div> <!-- end col -->
-
-					<div class="col-md-4 nopadding">
-						<div class="promo-box-second">
-							<i class="icon icon-Umbrella"></i>
-							<h2 class="heading-white">Правильность выбора</h2>
-							<p class="white">Таким образом новая модель организационной деятельности способствует подготовки и реализации системы обучения кадров, соответствует насущным потребностям. Повседневная практика показывает, что дальнейшее развитие различных форм деятельности требуют от нас анализа форм развития.
-							</p>
-							<a href="#" class="btn btn-large btn-rounded btn-light-transparent">Читать</a>
-						</div> <!-- end fist promo box -->
-					</div> <!-- end col -->
-
-					<div class="col-md-4 nopadding">
-						<div class="promo-box-third">
-							<i class="icon icon-Dollars"></i>
-							<h2 class="heading-white">Успешность работы</h2>
-							<p class="white">Таким образом новая модель организационной деятельности способствует подготовки и реализации системы обучения кадров, соответствует насущным потребностям. Повседневная практика показывает, что дальнейшее развитие различных форм деятельности требуют от нас анализа форм развития.
-							</p>
-							<a href="#" class="btn btn-large btn-rounded btn-light-transparent">Читать</a>
-						</div> <!-- end fist promo box -->
-					</div> <!-- end col -->					
-				</div> <!-- end row -->
-			</div> <!-- end container -->
-		</section> <!-- end promo boxes-->
-
-	<!-- Partners -->
-		<section class="partners-dark">
-			<div class="container">
-				<div class="row">
-
-					<div class="col-md-2 col-sm-4 col-xs-6">
-						<a href="#">
-							<img src="upload/partner_logo_1.png" alt="partner logo 1">
-						</a>
-					</div> <!-- end first logo -->
-
-					<div class="col-md-2 col-sm-4 col-xs-6">
-						<a href="#">
-							<img src="upload/partner_logo_2.png" alt="partner logo 2">
-						</a>
-					</div> <!-- end second logo -->
-
-					<div class="col-md-2 col-sm-4 col-xs-6">
-						<a href="#">
-							<img src="upload/partner_logo_3.png" alt="partner logo 3">
-						</a>
-					</div> <!-- end third logo -->
-
-					<div class="col-md-2 col-sm-4 col-xs-6">
-						<a href="#">
-							<img src="upload/partner_logo_4.png" alt="partner logo 4">
-						</a>
-					</div> <!-- end fourth logo -->
-
-					<div class="col-md-2 col-sm-4 col-xs-6">
-						<a href="#">
-							<img src="upload/partner_logo_5.png" alt="partner logo 5">
-						</a>
-					</div> <!-- end fifth logo -->
-
-					<div class="col-md-2 col-sm-4 col-xs-6">
-						<a href="#">
-							<img src="upload/partner_logo_6.png" alt="partner logo 6">
-						</a>
-					</div> <!-- end last logo -->
-				</div> <!-- end row -->
-			</div> <!-- end container -->
-		</section> <!-- end partners -->
-
-	<!-- Contact -->
-		<section class="section-wrap contact">
-			<div class="container">			
-				<h2 class="text-center">Связь</h2>
-				<p class="subheading text-center">Свяжитесь с нами</p>
-				<div class="main-border blue"></div>
-
-				<div class="row mt50">
-					<div class="col-md-7 col-sm-7">
-						<form id="contact-form" action="#">
-							<input name="name" id="name" type="text" class="form-control" placeholder="Имя*">
-							<input name="mail" id="mail" type="email" class="form-control" placeholder="E-mail*">	
-							<input name="subject" id="subject" type="text" class="form-control" placeholder="Тема">	
-							<textarea name="comment" id="comment" class="form-control" placeholder="Сообщение"></textarea>
-		  					<input type="submit" value="Отправить" id="submit-message">
-			  				<div id="msg" class="message"></div>
-			  			</form>
-					</div> <!-- end col -->
-					
-					<div class="col-md-4 col-md-offset-1 col-sm-5">
-						<h5>Ждем Вас</h5>
-						<p>Время работы 8:00 pm – 20:00<br>
-						звоните или пишите нам</p>
-						<div class="contact-item">
-							<div class="contact-icon">
-								<i class="icon icon-Phone2"></i>
-							</div>
-							<span>111-111-111</span>
-						</div> <!-- end phone number -->
-
-						<div class="contact-item">
-							<div class="contact-icon">
-								<i class="icon icon-Mail"></i>
-							</div>
-							<a href="#">info@gmail.com</a>
-						</div> <!-- end email -->
-
-						<div class="contact-item">
-							<div class="contact-icon">
-								<i class="icon icon-House"></i>
-							</div>
-							<p>Название компании<br>
-							Россия<br>
-							Москва, ул. Пушкина<br>
-							11111</p>
-						</div> <!-- end address -->
-
-					</div> <!-- end col -->
-				</div> <!-- end row -->
-			</div> <!-- end container -->
-		</section> <!-- end contact -->
-	
-	<!-- Footer -->
-		<footer id="footer">
-			<div class="container">
-				<div class="footer-widgets">
-					<div class="row">
-						<div class="col-md-4">
-							<div class="footer-about-us">
-								<h5 class="heading-white">О комнпаии</h5>
-								<p>Таким образом новая модель организационной деятельности способствует подготовки и реализации системы обучения кадров, соответствует насущным потребностям.</p>
-								<div class="social-icons">
-									<a href="#"><i class="fa fa-facebook"></i></a>
-									<a href="#"><i class="fa fa-twitter"></i></a>
-									<a href="#"><i class="fa fa-google-plus"></i></a>
-									<a href="#"><i class="fa fa-linkedin"></i></a>
-									<a href="#"><i class="fa fa-pinterest-p"></i></a>
-									<a href="#"><i class="fa fa-instagram"></i></a>
-								</div>
-							</div>
-						</div> <!-- end about us -->
-
-						<div class="col-md-4">
-							<h5 class="heading-white">Адрес</h5>
-							<div class="office-1">
-								<p>Россия, Москва</p>
-								<p>Телефон: 111-111-111</p>
-								<p>Email: <a href="mailto:info@gmail.com">info@gmail.com</a></p>
-							</div>
-							<div class="office-2">
-								<p>Россия, Санкт-Петербург</p>
-								<p>Телефон: 111-111-111</p>
-								<p>Email: <a href="mailto:info@gmail.com">info@gmail.com</a></p>
-							</div>
-						</div> <!-- end stay in touch -->
-
-						<div class="col-md-4">
-							<h5 class="heading-white">Последние новости</h5>
-							<div class="footer-posts">
-								<div class="footer-entry">
-									<h6>
-										<a href="blog-single.html">Заголовок новости №1</a>
-									</h6>
-									<span>11 август, 2015 / <a href="blog-single.html">10 комментариев</a></span>
-								</div> <!-- end entry -->
-
-								<div class="footer-entry">
-									<h6>
-										<a href="blog-single.html">Заголовок новости №2</a>
-									</h6>
-									<span>08 август, 2015 / <a href="blog-single.html">03 комментариев</a></span>
-								</div> <!-- end entry -->
-
-								<div class="footer-entry">
-									<h6>
-										<a href="blog-single.html">Заголовок новости №3</a>
-									</h6>
-									<span>05 август, 2015 / <a href="blog-single.html">05 комментариев</a></span>
-								</div> <!-- end entry -->
-							</div> <!-- end footer posts -->
-						</div> <!-- end latest posts -->
-
-					</div> <!-- end row -->
-				</div> <!-- end footer widgets -->			
-			</div> <!-- end container -->
-
-			<div class="bottom-footer">
-				<div class="container">
-					<div class="row">
-						<div class="col-xs-12 text-center">
-							<div class="copyright">
-								© 2015 World Information - шаблон вебсайта | <a href="http://HTML6.COM.RU">HTML6.COM.RU</a>
-							</div>
-						</div> <!-- end col -->
-					</div> <!-- end row -->
-				</div> <!-- end container -->
-			</div> <!-- end bottom footer -->
-		</footer> <!-- end footer -->
-
-		<div id="back-to-top">
-			<a href="#top"><i class="fa fa-angle-up"></i></a>
-		</div>
-
-	</div> <!-- end main-wrapper -->
-	
-
-	<!-- jQuery Scripts -->
-	<script src="js/jquery.min.js"></script>
-	<script src="js/snap.svg-min.js"></script>
-	<script src="js/main.js"></script> <!-- Resource jQuery -->
-	<script type="text/javascript" src="js/bootstrap.min.js"></script>
-	<script type="text/javascript" src="js/jquery.countTo.js"></script>
-	<script type="text/javascript" src="js/jquery.appear.js"></script>
-	<script type="text/javascript" src="js/plugins-scroll.js"></script>
-	<script type="text/javascript" src="js/isotope.pkgd.min.js"></script>
-	<script type="text/javascript" src="js/jquery.easing.min.js"></script>
-	<script type="text/javascript" src="js/imagesloaded.pkgd.min.js"></script>
-	<script src="js/wow.min.js"></script>
-
-	<!-- Custom Theme JavaScript -->
-    <script src="js/scripts.js"></script>
-
-	  
+        // Фокус на ввод при загрузке
+        window.addEventListener('load', () => {
+            terminalInput.focus();
+        });
+    </script>
 </body>
-
 </html>
